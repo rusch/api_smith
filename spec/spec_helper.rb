@@ -13,7 +13,8 @@ require 'rr'
 require 'json'
 
 Dir[Pathname(__FILE__).dirname.join("support/**/*.rb")].each { |f| require f }
-
 RSpec.configure do |config|
   config.mock_with :rr
+  config.expect_with(:rspec) { |c| c.syntax = [ :should, :expect ] }
 end
+RSpec::Expectations.configuration.on_potential_false_positives = :nothing

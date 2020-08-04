@@ -107,6 +107,7 @@ module APISmith
     #   using the key(s) specified in from.
     # @option options [Block] :transformer Specify a class or block to use when transforming the data.
     def self.property(property_name, options = {})
+      property_name = property_name.to_s
       super
       if options[:from]
         property_name = property_name.to_s
@@ -122,10 +123,11 @@ module APISmith
     # Does this Smash class contain a specific property (key),
     # or does it have a key mapping (via :from)
     #
-    # @param [Symbol] key the property to test for.
+    # @param [Symbol] property_name the property to test for.
     # @return [Boolean] true if this class contains the key; else, false.
-    def self.property?(key)
-      super || key_mapping.has_key?(key.to_s)
+    def self.property?(property_name)
+      property_name = property_name.to_s
+      super || key_mapping.key?(property_name)
     end
 
     # Automates type conversion (including on Array and Hashes) to this type.
@@ -165,7 +167,7 @@ module APISmith
     # @return If the property exists value is returned; else, nil.
     def []=(property, value)
       key = transform_key(property)
-      super key, transform_property(key, value)
+      super(key, transform_property(key, value))
     rescue UnknownKey
       nil
     end

@@ -90,11 +90,11 @@ describe APISmith::Smash do
     end
 
     it 'should not overwrite the parent classes unknown key error' do
-      parent_smash.exception_on_unknown_key?.should be_false
-      client_smash.exception_on_unknown_key?.should be_false
+      parent_smash.exception_on_unknown_key?.should be false
+      client_smash.exception_on_unknown_key?.should be false
       client_smash.exception_on_unknown_key = true
-      parent_smash.exception_on_unknown_key?.should be_false
-      client_smash.exception_on_unknown_key?.should be_true
+      parent_smash.exception_on_unknown_key?.should be false
+      client_smash.exception_on_unknown_key?.should be true
     end
 
   end
@@ -124,29 +124,29 @@ describe APISmith::Smash do
 
     it 'should let you swallow errors on unknown keys' do
       my_smash.properties.should_not include(:name)
-      my_smash.exception_on_unknown_key?.should be_false
+      my_smash.exception_on_unknown_key?.should be false
       expect do
         my_smash.new(:name => 'Test')
-      end.should_not raise_error
-      my_smash.exception_on_unknown_key?.should be_false
+      end.not_to raise_error
+      my_smash.exception_on_unknown_key?.should be false
     end
 
     it 'should raise an exception correctly when not ignoring unknown keys' do
       my_smash.properties.should_not include(:name)
       my_smash.exception_on_unknown_key = true
-      my_smash.exception_on_unknown_key?.should be_true
+      my_smash.exception_on_unknown_key?.should be true
       expect do
         my_smash.new[:name] = 'Test'
       end.to raise_error(NoMethodError)
       expect do
         my_smash.new[:name]
       end.to raise_error(NoMethodError)
-      my_smash.exception_on_unknown_key?.should be_true
+      my_smash.exception_on_unknown_key?.should be true
     end
 
     it 'should default to ignoring unknown key errors' do
       klass = Class.new(APISmith::Smash)
-      klass.exception_on_unknown_key?.should be_false
+      klass.exception_on_unknown_key?.should be false
       expect do
         klass.new[:my_imaginary_key] = 'of doom'
         klass.new[:my_imaginary_key]

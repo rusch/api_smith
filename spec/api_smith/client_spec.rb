@@ -44,19 +44,19 @@ describe APISmith::Client do
   end
 
   it 'should allow you to perform get requests' do
-    client.get('/echo').should == {"verb" => "get", "echo" => nil}
+    client.get('/echo').to_h.should == {"verb" => "get", "echo" => nil}
   end
 
   it 'should allow you to perform post requests' do
-    client.post('/echo').should == {"verb" => "post", "echo" => nil}
+    client.post('/echo').to_h.should == {"verb" => "post", "echo" => nil}
   end
 
   it 'should allow you to perform put requests' do
-    client.put('/echo').should == {"verb" => "put", "echo" => nil}
+    client.put('/echo').to_h.should == {"verb" => "put", "echo" => nil}
   end
 
   it 'should allow you to perform delete requests' do
-    client.delete('/echo').should == {"verb" => "delete", "echo" => nil}
+    client.delete('/echo').to_h.should == {"verb" => "delete", "echo" => nil}
   end
 
   it 'should default to returning a httparty response' do
@@ -82,7 +82,7 @@ describe APISmith::Client do
     end
 
     it 'should allow you to pass extra request options' do
-      mock.proxy(client_klass).get('/a', hash_including(:awesome => true))
+      RR.mock.proxy(client_klass).get('/a', RR.hash_including(:awesome => true))
       client.get '/a', :extra_request => {:awesome => true}
     end
 
@@ -97,24 +97,24 @@ describe APISmith::Client do
     end
 
     it 'should let you add request options on an instance level' do
-      mock.proxy(client_klass).get('/a', hash_including(:awesome => true))
+      RR.mock.proxy(client_klass).get('/a', RR.hash_including(:awesome => true))
       client.send :add_request_options!, :awesome => true
       client.get('/a')
     end
 
     it 'should let you override the base level body options' do
-      mock(client).base_body_options { {:echo => "Hello"} }
+      RR.mock(client).base_body_options { {:echo => "Hello"} }
       client.post('/echo')["echo"].should == "Hello"
     end
 
     it 'should let you override the base level query string options' do
-      mock(client).base_query_options { {:echo => "Hello"} }
+      RR.mock(client).base_query_options { {:echo => "Hello"} }
       client.get('/echo')["echo"].should == "Hello"
     end
 
     it 'should let you override the base level request options' do
-      mock.proxy(client_klass).get('/a', hash_including(:awesome => true))
-      mock(client).base_request_options { {:awesome => true} }
+      RR.mock.proxy(client_klass).get('/a', RR.hash_including(:awesome => true))
+      RR.mock(client).base_request_options { {:awesome => true} }
       client.get('/a')
     end
 
@@ -136,13 +136,13 @@ describe APISmith::Client do
     end
 
     it 'should let you override the default response container' do
-      mock(client).default_response_container('/namespaced/test', anything) { %w(response age) }
+      RR.mock(client).default_response_container('/namespaced/test', RR.anything) { %w(response age) }
       client.get('/namespaced/test').should == 20
     end
 
     it 'should let you always skip the response container' do
-      dont_allow(client).default_response_container.with_any_args
-      client.get('/namespaced/test', :response_container => nil).should == {
+      RR.dont_allow(client).default_response_container.with_any_args
+      client.get('/namespaced/test', :response_container => nil).to_h.should == {
         "response" => {
           "age"  => 20,
           "name" => "Roger"
@@ -167,7 +167,7 @@ describe APISmith::Client do
 
     it 'should use .call on the transformer' do
       transformer = Object.new
-      mock(transformer).call(rr_satisfy { |x| x.to_hash == {"name" => "Darcy"}}) { 42 }
+      RR.mock(transformer).call(RR.rr_satisfy { |x| x.to_hash == {"name" => "Darcy"}}) { 42 }
       response = client.get('/simple', :transform => transformer)
       response.should == 42
     end
@@ -201,19 +201,19 @@ describe APISmith::Client do
   describe 'checking for errors' do
 
     it 'should invoke the errors hook' do
-      mock(client).check_response_errors(anything)
+      RR.mock(client).check_response_errors(RR.anything)
       client.get('/simple')
     end
 
     it 'should do it before unpack the response' do
-      mock(client).check_response_errors(rr_satisfy { |x| x.to_hash == {"response" => {"name" => "Steve"}} })
+      RR.mock(client).check_response_errors(RR.rr_satisfy { |x| x.to_hash == {"response" => {"name" => "Steve"}} })
       client.get('/nested', :response_container => %w(response))
     end
 
     it 'should let you prevent unpacking / transformation from happening' do
       transformer = Object.new
-      dont_allow(transformer).call.with_any_args
-      mock(client).check_response_errors(anything) { raise StandardError }
+      RR.dont_allow(transformer).call.with_any_args
+      RR.mock(client).check_response_errors(RR.anything) { raise StandardError }
       expect do
         client.get('/simple', :transform => transformer)
       end.to raise_error(StandardError)
@@ -237,7 +237,7 @@ describe APISmith::Client do
     end
 
     it 'should let you override it on an instance level' do
-      mock(client).endpoint { 'test/nested' }
+      RR.mock(client).endpoint { 'test/nested' }
       client.send(:path_for, 'test2').should == "/test/nested/test2"
     end
 
